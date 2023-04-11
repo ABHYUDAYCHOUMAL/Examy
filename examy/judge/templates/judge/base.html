@@ -1,0 +1,141 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}HomePage{% endblock %} | Examy</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+
+    <!-- Icons -->
+    <link href="/static/assets/vendor/nucleo/css/nucleo.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+        integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <!-- Theme CSS -->
+    <link type="text/css" href="/static/assets/css/argon.min.css" rel="stylesheet">
+
+    <style>
+        .ql-editor strong {
+            font-weight: bold;
+        }
+    </style>
+    {% block styles %}
+    {% endblock %}
+</head>
+
+<body>
+    {% url 'judge:index' as homepage %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-default">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ homepage }}">Examy</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-default"
+                aria-controls="navbar-default" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbar-default">
+                <div class="navbar-collapse-header">
+                    <div class="row">
+                        <div class="col-6 collapse-brand">
+                            <a href="{{ homepage }}">
+                                LOGO
+                                <!-- TODO -->
+                            </a>
+                        </div>
+                        <div class="col-6 collapse-close">
+                            <button type="button" class="navbar-toggler" data-toggle="collapse"
+                                data-target="#navbar-default" aria-controls="navbar-default" aria-expanded="false"
+                                aria-label="Toggle navigation">
+                                <span></span>
+                                <span></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <ul class="navbar-nav mr-lg-auto">
+                    {% block navlink %}
+                    {% endblock %}
+                </ul>
+                <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
+                        {% if user.is_superuser %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="tooltip" data-placement="bottom"
+                                    title="{{ user.email }}">Hi Superuser <b>{{ user.get_username }}</b></a>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="#" data-toggle="tooltip" data-placement="bottom"
+                                    title="{{ user.email }}">Hi <b>{{ user.get_full_name }}</b></a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="btn btn-neutral btn-icon" href="{% url 'judge:logout' %}"><span
+                                    class="btn-inner--icon">
+                                    <i class="fas fa-sign-out-alt mr-2 mb-1"></i>
+                                </span>
+                                <span class="nav-link-inner--text">Log out</span></a>
+                        </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="btn btn-neutral btn-icon" href="{% url 'judge:social:begin' 'google-oauth2' %}"><span
+                                class="btn-inner--icon">
+                                <i class="fas fa-sign-in-alt mr-2 mb-1"></i>
+                            </span>
+                            <span class="nav-link-inner--text">Log in</span></a>
+                    </li>
+                    {% endif %}
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="btn btn-warning btn-icon" href="/admin/" target="_blank"><span
+                                class="btn-inner--icon">
+                                <i class="fas fa-sign-in-alt mr-2 mb-1"></i>
+                            </span>
+                            <span class="nav-link-inner--text">Administration</span></a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+
+        </div>
+    </nav>
+    <div class="container">
+        {% if request.path != homepage %}
+        <nav aria-label="breadcrumb" class="my-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ homepage }}">Home</a></li>
+                {% block breadcrumb %}
+                {% endblock %}
+            </ol>
+        </nav>
+        {% endif %}
+        <div class="row my-4">
+            <div class="col-12">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Core -->
+    <script src="/static/assets/vendor/jquery/jquery.min.js"></script>
+    <script src="/static/assets/vendor/popper/popper.min.js"></script>
+    <script src="/static/assets/vendor/bootstrap/bootstrap.min.js"></script>
+
+    <!-- Theme JS -->
+    <script src="/static/assets/js/argon.min.js"></script>
+    <script>
+        $(document).ready(() => {
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+        })
+    </script>
+    {% block scripts %}
+    {% endblock %}
+</body>
+
+</html>

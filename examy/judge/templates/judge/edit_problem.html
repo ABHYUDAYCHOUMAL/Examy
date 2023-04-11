@@ -1,0 +1,102 @@
+{% extends "judge/base.html" %}
+
+{% block title %}Edit Problem {{ problem.code }} | Contest {{ contest.pk }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'judge:contest_detail' contest.pk %}">Contest {{ contest.pk }}</a></li>
+<li class="breadcrumb-item"><a href="{% url 'judge:problem_detail' problem.code %}">Problem {{ problem.code }}</a></li>
+<li class="breadcrumb-item active" aria-current="page">Edit</li>
+{% endblock %}
+
+{% block styles %}
+<link href="/static/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/assets/vendor/quill/quill.js"></script>
+<script>
+    let quillModules = {
+        toolbar: [
+            ['bold', 'italic'],
+            ['link', 'blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+        ]
+    }
+
+    let statementQuill = new Quill('#statementEditor', {
+        modules: quillModules,
+        theme: 'snow',
+    })
+
+    let inputFormatQuill = new Quill('#inputFormatEditor', {
+        modules: quillModules,
+        theme: 'snow',
+    })
+
+    let outputFormatQuill = new Quill('#outputFormatEditor', {
+        modules: quillModules,
+        theme: 'snow',
+    })
+
+    {% if problem.statement != None %}
+    statementQuill.setContents(JSON.parse('{{ problem.statement | escapejs }}'))
+    {% endif %}
+    {% if problem.input_format != None %}
+    inputFormatQuill.setContents(JSON.parse('{{ problem.input_format | escapejs }}'))
+    {% endif %}
+    {% if problem.output_format != None %}
+    outputFormatQuill.setContents(JSON.parse('{{ problem.output_format | escapejs }}'))
+    {% endif %}
+
+    $('form').submit(function (e) {
+        $('#id_statement').val(JSON.stringify(statementQuill.getContents()))
+        $('#id_input_format').val(JSON.stringify(inputFormatQuill.getContents()))
+        $('#id_output_format').val(JSON.stringify(outputFormatQuill.getContents()))
+    })
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row my-2">
+    <div class="col-12">
+        <h2>Edit Problem</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-md-8">
+        <form action="{% url 'judge:edit_problem' problem.code %}" method="POST">
+            {% if form.non_field_errors %}
+            {% for nfe in form.non_field_errors %}
+            <div class="alert alert-danger mt-2" role="alert">
+                    {{ nfe }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }} {{ field }}
+                {% if field.name == 'statement' %}
+                <div id="statementEditor"></div>
+                {% endif %}
+                {% if field.name == 'input_format' %}
+                <div id="inputFormatEditor"></div>
+                {% endif %}
+                {% if field.name == 'output_format' %}
+                <div id="outputFormatEditor"></div>
+                {% endif %}
+                {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                {% endif %}
+                {% if field.errors %}
+                <div class="alert alert-danger mt-2" role="alert">
+                    {{ field.errors|striptags }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

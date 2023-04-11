@@ -1,0 +1,62 @@
+{% extends "judge/base.html" %}
+
+{% block title %}New Contest{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+    var date_options = {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i:S",
+        allowInput: true,
+        enableSeconds: true
+    }
+    $("#id_contest_start").flatpickr(date_options)
+    $("#id_contest_soft_end").flatpickr(date_options)
+    $("#id_contest_hard_end").flatpickr(date_options)
+</script>
+{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active" aria-current="page">New Contest</li>
+{% endblock %}
+
+{% block content %}
+<div class="row my-2">
+    <div class="col-12">
+        <h2>New Contest</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-md-8">
+        <form action="{% url 'judge:new_contest' %}" method="POST">
+            {% if form.non_field_errors %}
+            {% for nfe in form.non_field_errors %}
+            <div class="alert alert-danger mt-2" role="alert">
+                    {{ nfe }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                {{ field.label_tag }} {{ field }}
+                {% if field.help_text %}
+                <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                {% endif %}
+                {% if field.errors %}
+                <div class="alert alert-danger mt-2" role="alert">
+                    {{ field.errors|striptags }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Create</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

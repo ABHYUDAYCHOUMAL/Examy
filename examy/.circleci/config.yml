@@ -1,0 +1,34 @@
+version: 2
+jobs:
+  test:
+    working_directory: ~/autojudge
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - run:
+          name: Install Django
+          command: |
+            sudo pip install Django
+            sudo pip install social-auth-app-django
+      - run:
+          name: Install flake8 and mypy
+          command: |
+            sudo pip install flake8
+            sudo pip install mypy
+      - run:
+          name: Lint Check
+          command: |
+            flake8
+            mypy --ignore-missing-imports judge/
+      - run:
+          name: Django tests
+          command: |
+            export GOOGLE_OAUTH2_KEY=''
+            export GOOGLE_OAUTH2_SECRET=''
+            python manage.py test
+workflows:
+  version: 2
+  commit:
+    jobs:
+      - test

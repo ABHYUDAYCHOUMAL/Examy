@@ -1,0 +1,346 @@
+{% extends 'judge/base.html' %}
+
+{% block title %}Problem {{ problem.code }} | Contest {{ problem.contest }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'judge:contest_detail' problem.contest.pk %}">Contest
+        {{ problem.contest.pk }}</a></li>
+<li class="breadcrumb-item active" aria-current="page">Problem {{ problem.code }}</li>
+{% endblock %}
+
+{% block styles %}
+<link href="/static/assets/vendor/quill/quill.snow.css" rel="stylesheet">
+<style>
+    .zero-clipboard {
+        position: relative;
+    }
+
+    .copy-btn {
+        position: absolute;
+        top: .5rem;
+        right: .5rem;
+        z-index: 10;
+        display: block;
+        padding: .25rem .5rem;
+        font-size: 75%;
+        color: #818a91;
+        cursor: pointer;
+        background-color: transparent;
+        border: 0;
+        border-radius: .25rem;
+    }
+
+    .copy-btn:hover {
+        color: #fff;
+        background-color: #027de7;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+<script src="/static/assets/vendor/quill/quill.js"></script>
+<script>
+    let quillModules = {
+        toolbar: false
+    }
+
+    let statementQuill = new Quill('#statementEditor', {
+        modules: quillModules,
+        theme: 'bubble',
+    })
+
+    let inputFormatQuill = new Quill('#inputFormatEditor', {
+        modules: quillModules,
+        theme: 'bubble',
+    })
+
+    let outputFormatQuill = new Quill('#outputFormatEditor', {
+        modules: quillModules,
+        theme: 'bubble',
+    })
+
+    {% if problem.statement != None %}
+    statementQuill.setContents(JSON.parse('{{ problem.statement | escapejs }}'))
+    {% endif %}
+    {% if problem.input_format != None %}
+    inputFormatQuill.setContents(JSON.parse('{{ problem.input_format | escapejs }}'))
+    {% endif %}
+    {% if problem.output_format != None %}
+    outputFormatQuill.setContents(JSON.parse('{{ problem.output_format | escapejs }}'))
+    {% endif %}
+
+    statementQuill.disable()
+    inputFormatQuill.disable()
+    outputFormatQuill.disable()
+
+    $(document).ready(function () {
+        $(".custom-file-input").on("change", function () {
+            var fileName = $(this).val().split("\\").pop();
+            $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+        });
+    })
+</script>
+<script>
+    $('.copy-btn').attr('data-original-title', 'Copy to clipboard')
+    $('.copy-btn').tooltip({
+        placement: 'bottom'
+    })
+    $('.copy-btn').mouseleave(function () {
+        $(this).attr('data-original-title', 'Copy to clipboard')
+    })
+
+    function setTooltip(btn, message) {
+        $(btn).tooltip('hide').attr('data-original-title', message).tooltip('show')
+    }
+
+    var clipboard = new ClipboardJS('.copy-btn')
+    clipboard.on('success', function (e) {
+        setTooltip(e.trigger, 'Copied!');
+    });
+
+    clipboard.on('error', function (e) {
+        setTooltip(e.trigger, 'Failed!');
+    });
+
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col mb-3">
+        <h2 class="d-inline"><code>[{{ problem.code }}]</code></h2>
+        <h4 class="d-inline mx-2">{{ problem.name }}</h4>
+    </div>
+    <div class="col mb-3">
+        {% if type == 'Poster' %}
+        <div class="float-right">
+            <a href="{% url 'judge:edit_problem' problem.pk %}" class="btn btn-primary">
+                <i class="fas fa-edit"></i>
+            </a>
+            {% if curr_time < problem.contest.start_datetime %}
+            <form class="d-inline" action="{% url 'judge:delete_problem' problem.pk %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    <div class="col-12 my-4">
+        <h4 class="">Statement</h4>
+        <div id="statementEditor"></div>
+    </div>
+    <div class="col-12 my-4">
+        <h4>Input Format</h4>
+        <div id="inputFormatEditor"></div>
+    </div>
+    <div class="col-12 my-4">
+        <h4>Output Format</h4>
+        <div id="outputFormatEditor"></div>
+    </div>
+    <div class="col-12">
+        <table class="table table-striped">
+            <tbody>
+                <tr>
+                    <th>Max. Score</th>
+                    <td>{{ problem.max_score }}</td>
+                </tr>
+                <tr>
+                    <th>Difficulty</th>
+                    <td>{{ problem.difficulty }}</td>
+                </tr>
+                <tr>
+                    <th>Time limit</th>
+                    <td>{{ problem.time_limit }}</td>
+                </tr>
+                <tr>
+                    <th>Memory limit</th>
+                    <td>{{ problem.memory_limit }} MB</td>
+                </tr>
+                <tr>
+                    <th>Allowed file extensions</th>
+                    <td>{{ problem.file_exts }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-12 my-4">
+        <h4>Public test cases</h4>
+        {% for test in public_tests %}
+        <h5 class="d-inline">Test Case {{ forloop.counter }}</h5>
+        {% if type == 'Poster' and curr_time < problem.contest.start_datetime %}
+        <div class="d-inline">
+            <form class="d-inline" action="{% url 'judge:delete_testcase' problem.pk test.2 %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
+            </form>
+        </div>
+        {% endif %}
+        <div class="col-12">
+            <h6>Input</h6>
+            <div class="zero-clipboard">
+                <button class="copy-btn" data-clipboard-target="#pub_test_input_{{ forloop.counter }}">Copy</button>
+                <pre
+                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pub_test_input_{{ forloop.counter }}">{{ test.0 }}</code></pre>
+            </div>
+        </div>
+        <div class="col-12">
+            <h6>Output</h6>
+            <div class="zero-clipboard">
+                <button class="copy-btn" data-clipboard-target="#pub_test_output_{{ forloop.counter }}">Copy</button>
+                <pre
+                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pub_test_output_{{ forloop.counter }}">{{ test.1 }}</code></pre>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if type == 'Poster' %}
+    <div class="col-12 my-4">
+        <h4>Private test cases</h4>
+        {% for test in private_tests %}
+        <h5 class="d-inline">Test Case {{ forloop.counter }}</h5>
+        {% if curr_time < problem.contest.start_datetime %}
+        <div class="d-inline">
+            <form class="d-inline" action="{% url 'judge:delete_testcase' problem.pk test.2 %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
+            </form>
+        </div>
+        {% endif %}
+        <div class="col-12">
+            <h6>Input</h6>
+            <div class="zero-clipboard">
+                <button class="copy-btn" data-clipboard-target="#pri_test_input_{{ forloop.counter }}">Copy</button>
+                <pre
+                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pri_test_input_{{ forloop.counter }}">{{ test.0 }}</code></pre>
+            </div>
+        </div>
+        <div class="col-12">
+            <h6>Output</h6>
+            <div class="zero-clipboard">
+                <button class="copy-btn" data-clipboard-target="#pri_test_output_{{ forloop.counter }}">Copy</button>
+                <pre
+                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pri_test_output_{{ forloop.counter }}">{{ test.1 }}</code></pre>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="col-12 mb-4">
+        {% if problem.starting_code %}
+        <a href="{% url 'judge:problem_starting_code' problem.pk %}" class="btn btn-default">Download starting code</a>
+        {% endif %}
+        {% if type == 'Poster' %}
+        <a href="{% url 'judge:problem_compilation_script' problem.pk %}" class="btn btn-default">Download Compilation
+            Script</a>
+        <a href="{% url 'judge:problem_test_script' problem.pk %}" class="btn btn-default">Download Test Script</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if type == 'Participant' and user.is_authenticated %}
+<div class="row">
+    <div class="col-12 my-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Submit Solution</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% if form.non_field_errors %}
+                    {% for nfe in form.non_field_errors %}
+                    <div class="alert alert-danger mt-2" role="alert">
+                            {{ nfe }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% csrf_token %}
+                    {% for field in form %}
+                    {% if field.name == 'submission_file' %}
+                    <div class="form-group custom-file">
+                        <label class="custom-file-label" for="{{ field.auto_id }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="alert alert-danger mt-2" role="alert">
+                            {{ field.errors|striptags }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="alert alert-danger mt-2" role="alert">
+                            {{ field.errors|striptags }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    <div class="form-group my-2">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <a href="{% url 'judge:problem_submissions' problem.pk %}" class="btn btn-default">See my previous
+            submissions</a>
+    </div>
+</div>
+{% endif %}
+
+{% if type == 'Poster' %}
+<div class="row">
+    {% if curr_time < problem.contest.start_datetime %}
+    <div class="col-12 my-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Add Test Case</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger alter-dismissible fade show" role="alert">
+                        {{ form.non_field_errors }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    {% endif %}
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <div class="form-group">
+                        {{ field.label_tag }}
+                        {{ field }}
+                        {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text|safe }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                        <div class="alert alert-danger mt-2" role="alert">
+                            {{ field.errors|striptags }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-default">Add test case</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <div class="col-12">
+        <a href="{% url 'judge:problem_submissions' problem.pk %}" class="btn btn-default">See all submissions</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
