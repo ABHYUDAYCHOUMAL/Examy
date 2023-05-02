@@ -52,4 +52,4 @@ Downloading Views
     .. autofunction:: problem_compilation_script
     .. autofunction:: problem_test_script
     .. autofunction:: problem_default_script
-    .. autofunction:: submission_download
+    .. autofunction:: submission_download    

@@ -52,8 +52,8 @@ class NewContestForm(forms.Form):
     """
 
     contest_name = forms.CharField(label='Contest name', max_length=50, strip=True,
-                                   widget=forms.TextInput(attrs={'class': 'form-control'}),
-                                   help_text='Enter the name of the contest.')
+                                widget=forms.TextInput(attrs={'class': 'form-control'}),
+                                help_text='Enter the name of the contest.')
     """Contest Name"""
 
     contest_start = forms.DateTimeField(label='Start Date',
@@ -62,10 +62,10 @@ class NewContestForm(forms.Form):
     """Contest Start Timestamp"""
 
     contest_soft_end = forms.DateTimeField(label='Soft End Date for contest',
-                                           widget=forms.DateTimeInput(
-                                               attrs={'class': 'form-control'}),
-                                           help_text='Specify after when would you like to \
-                                                      penalize submissions.')
+                                        widget=forms.DateTimeInput(
+                                        attrs={'class': 'form-control'}),
+                                        help_text='Specify after when would you like to \
+                                                    penalize submissions.')
     """Contest Soft End Timestamp"""
 
     contest_hard_end = forms.DateTimeField(label='Hard End Date for contest',

@@ -37,7 +37,6 @@
         modules: quillModules,
         theme: 'snow',
     })
-
     {% if problem.statement != None %}
     statementQuill.setContents(JSON.parse('{{ problem.statement | escapejs }}'))
     {% endif %}

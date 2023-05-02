@@ -12,6 +12,7 @@ from .models import Contest, Problem, TestCase, Submission
 from .forms import NewContestForm, AddPersonToContestForm, DeletePersonFromContestForm
 from .forms import NewProblemForm, EditProblemForm, NewSubmissionForm, AddTestCaseForm
 from .forms import NewCommentForm, UpdateContestForm, AddPosterScoreForm
+from .plagiarism import run_checker as run_plagiarism_checker
 
 
 def _get_user(request) -> User:
@@ -304,6 +305,15 @@ def contest_scores_csv(request, contest_id):
             response['Content-Disposition'] = \
                 "attachment; filename=contest_{}.csv".format(contest_id)
             return response
+    return handler404(request)
+
+def plagiarism_check(request, contest_id):
+    user = _get_user(request)
+    perm = handler.get_personcontest_permission(
+        None if user is None else user.email, contest_id)
+    if perm:
+        run_plagiarism_checker(contest_id)
+        return HttpResponse("Request Accepted!! Running in Background")
     return handler404(request)
 
 

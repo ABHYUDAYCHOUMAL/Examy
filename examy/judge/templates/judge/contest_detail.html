@@ -41,6 +41,7 @@
                 href="{% url 'judge:new_problem' contest.pk %}">Add Problem</a>{% endif %}
             <a class="btn btn-primary my-1 btn-sm" href="{% url 'judge:contest_scores_csv' contest.pk %}">Download
                 Scores</a>
+                <a class="btn btn-primary my-1 btn-sm" href="{% url 'judge:plagiarism_check' contest.pk %}">Run Plagiarism Check</a>
             {% endif %}
             <a class="btn btn-primary my-1 btn-sm" href="{% url 'judge:get_posters' contest.pk %}">See posters</a>
             {% if not contest.public %}<a class="btn btn-primary my-1 btn-sm"
