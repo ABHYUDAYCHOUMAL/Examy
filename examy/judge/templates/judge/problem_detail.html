@@ -40,7 +40,22 @@
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
 <script src="/static/assets/vendor/quill/quill.js"></script>
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs/loader.min.js"></script>
+<link rel="stylesheet" data-name="vs/editor/editor.main"
+    href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css">
+
+    <script>
+    var e = document.getElementById("ddlViewBy");
+    var value = e.value;
+    var text = e.options[e.selectedIndex].text;
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' } });
+    require(["vs/editor/editor.main"], () => {
+        monaco.editor.create(document.getElementById('container'), {
+            language: 'c',
+            theme: 'vs-dark',
+        });
+    });
+
     let quillModules = {
         toolbar: false
     }
@@ -118,12 +133,12 @@
             <a href="{% url 'judge:edit_problem' problem.pk %}" class="btn btn-primary">
                 <i class="fas fa-edit"></i>
             </a>
-            {% if curr_time < problem.contest.start_datetime %}
-            <form class="d-inline" action="{% url 'judge:delete_problem' problem.pk %}" method="POST">
+            {% if curr_time < problem.contest.start_datetime %} <form class="d-inline"
+                action="{% url 'judge:delete_problem' problem.pk %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
-            </form>
-            {% endif %}
+                </form>
+                {% endif %}
         </div>
         {% endif %}
     </div>
@@ -165,82 +180,92 @@
             </tbody>
         </table>
     </div>
+    <!-- <div class="col-12" id="container" style="min-height:400px;">
+        <h1>Code Editor</h1>
+    </div> -->
     <div class="col-12 my-4">
         <h4>Public test cases</h4>
         {% for test in public_tests %}
         <h5 class="d-inline">Test Case {{ forloop.counter }}</h5>
-        {% if type == 'Poster' and curr_time < problem.contest.start_datetime %}
-        <div class="d-inline">
+        {% if type == 'Poster' and curr_time < problem.contest.start_datetime %} <div class="d-inline">
             <form class="d-inline" action="{% url 'judge:delete_testcase' problem.pk test.2 %}" method="POST">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
             </form>
-        </div>
-        {% endif %}
-        <div class="col-12">
-            <h6>Input</h6>
-            <div class="zero-clipboard">
-                <button class="copy-btn" data-clipboard-target="#pub_test_input_{{ forloop.counter }}">Copy</button>
-                <pre
-                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pub_test_input_{{ forloop.counter }}">{{ test.0 }}</code></pre>
-            </div>
-        </div>
-        <div class="col-12">
-            <h6>Output</h6>
-            <div class="zero-clipboard">
-                <button class="copy-btn" data-clipboard-target="#pub_test_output_{{ forloop.counter }}">Copy</button>
-                <pre
-                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pub_test_output_{{ forloop.counter }}">{{ test.1 }}</code></pre>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% if type == 'Poster' %}
-    <div class="col-12 my-4">
-        <h4>Private test cases</h4>
-        {% for test in private_tests %}
-        <h5 class="d-inline">Test Case {{ forloop.counter }}</h5>
-        {% if curr_time < problem.contest.start_datetime %}
-        <div class="d-inline">
-            <form class="d-inline" action="{% url 'judge:delete_testcase' problem.pk test.2 %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
-            </form>
-        </div>
-        {% endif %}
-        <div class="col-12">
-            <h6>Input</h6>
-            <div class="zero-clipboard">
-                <button class="copy-btn" data-clipboard-target="#pri_test_input_{{ forloop.counter }}">Copy</button>
-                <pre
-                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pri_test_input_{{ forloop.counter }}">{{ test.0 }}</code></pre>
-            </div>
-        </div>
-        <div class="col-12">
-            <h6>Output</h6>
-            <div class="zero-clipboard">
-                <button class="copy-btn" data-clipboard-target="#pri_test_output_{{ forloop.counter }}">Copy</button>
-                <pre
-                    class="bg-secondary p-2 rounded pre-scrollable"><code id="pri_test_output_{{ forloop.counter }}">{{ test.1 }}</code></pre>
-            </div>
-        </div>
-        {% endfor %}
     </div>
     {% endif %}
-    <div class="col-12 mb-4">
-        {% if problem.starting_code %}
-        <a href="{% url 'judge:problem_starting_code' problem.pk %}" class="btn btn-default">Download starting code</a>
-        {% endif %}
-        {% if type == 'Poster' %}
-        <a href="{% url 'judge:problem_compilation_script' problem.pk %}" class="btn btn-default">Download Compilation
-            Script</a>
-        <a href="{% url 'judge:problem_test_script' problem.pk %}" class="btn btn-default">Download Test Script</a>
-        {% endif %}
+    <div class="col-12">
+        <h6>Input</h6>
+        <div class="zero-clipboard">
+            <button class="copy-btn" data-clipboard-target="#pub_test_input_{{ forloop.counter }}">Copy</button>
+            <pre
+                class="bg-secondary p-2 rounded pre-scrollable"><code id="pub_test_input_{{ forloop.counter }}">{{ test.0 }}</code></pre>
+        </div>
     </div>
+    <div class="col-12">
+        <h6>Output</h6>
+        <div class="zero-clipboard">
+            <button class="copy-btn" data-clipboard-target="#pub_test_output_{{ forloop.counter }}">Copy</button>
+            <pre
+                class="bg-secondary p-2 rounded pre-scrollable"><code id="pub_test_output_{{ forloop.counter }}">{{ test.1 }}</code></pre>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% if type == 'Poster' %}
+<div class="col-12 my-4">
+    <h4>Private test cases</h4>
+    {% for test in private_tests %}
+    <h5 class="d-inline">Test Case {{ forloop.counter }}</h5>
+    {% if curr_time < problem.contest.start_datetime %} <div class="d-inline">
+        <form class="d-inline" action="{% url 'judge:delete_testcase' problem.pk test.2 %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i></button>
+        </form>
+</div>
+{% endif %}
+<div class="col-12">
+    <h6>Input</h6>
+    <div class="zero-clipboard">
+        <button class="copy-btn" data-clipboard-target="#pri_test_input_{{ forloop.counter }}">Copy</button>
+        <pre
+            class="bg-secondary p-2 rounded pre-scrollable"><code id="pri_test_input_{{ forloop.counter }}">{{ test.0 }}</code></pre>
+    </div>
+</div>
+<div class="col-12">
+    <h6>Output</h6>
+    <div class="zero-clipboard">
+        <button class="copy-btn" data-clipboard-target="#pri_test_output_{{ forloop.counter }}">Copy</button>
+        <pre
+            class="bg-secondary p-2 rounded pre-scrollable"><code id="pri_test_output_{{ forloop.counter }}">{{ test.1 }}</code></pre>
+    </div>
+</div>
+{% endfor %}
+</div>
+{% endif %}
+<div class="col-12 mb-4">
+    {% if problem.starting_code %}
+    <a href="{% url 'judge:problem_starting_code' problem.pk %}" class="btn btn-default">Download starting code</a>
+    {% endif %}
+    {% if type == 'Poster' %}
+    <a href="{% url 'judge:problem_compilation_script' problem.pk %}" class="btn btn-default">Download Compilation
+        Script</a>
+    <a href="{% url 'judge:problem_test_script' problem.pk %}" class="btn btn-default">Download Test Script</a>
+    {% endif %}
+</div>
 </div>
 
 {% if type == 'Participant' and user.is_authenticated %}
 <div class="row">
+    <div class="col-12" id="container" style="min-height:400px;">
+        <h1>Code Editor</h1>
+        <select id="ddlViewBy">
+            <option value="c++" selected="selected">C++</option>
+            <option value="c">C</option>
+            <option value="python">Python</option>
+            <option value="go">Go</option>
+        </select>
+    </div>
     <div class="col-12 my-4">
         <div class="card">
             <div class="card-header">
@@ -251,7 +276,7 @@
                     {% if form.non_field_errors %}
                     {% for nfe in form.non_field_errors %}
                     <div class="alert alert-danger mt-2" role="alert">
-                            {{ nfe }}
+                        {{ nfe }}
                     </div>
                     {% endfor %}
                     {% endif %}
@@ -301,8 +326,7 @@
 
 {% if type == 'Poster' %}
 <div class="row">
-    {% if curr_time < problem.contest.start_datetime %}
-    <div class="col-12 my-4">
+    {% if curr_time < problem.contest.start_datetime %} <div class="col-12 my-4">
         <div class="card">
             <div class="card-header">
                 <h3>Add Test Case</h3>
@@ -336,11 +360,11 @@
                 </form>
             </div>
         </div>
-    </div>
-    {% endif %}
-    <div class="col-12">
-        <a href="{% url 'judge:problem_submissions' problem.pk %}" class="btn btn-default">See all submissions</a>
-    </div>
+</div>
+{% endif %}
+<div class="col-12">
+    <a href="{% url 'judge:problem_submissions' problem.pk %}" class="btn btn-default">See all submissions</a>
+</div>
 </div>
 {% endif %}
 {% endblock %}

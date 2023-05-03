@@ -1,0 +1,2 @@
+id,leftFileId,leftFilePath,rightFileId,rightFilePath,similarity,totalOverlap,longestFragment,leftCovered,rightCovered
+19,0,content/submissions/submission_09012ff5-8c30-48f3-af8a-5ed43db2a22c.cpp,1,content/submissions/submission_46750300-20fd-4243-a5ab-541175282955.cpp,1,34,17,17,17
