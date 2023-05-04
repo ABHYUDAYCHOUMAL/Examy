@@ -312,8 +312,12 @@ def plagiarism_check(request, contest_id):
     perm = handler.get_personcontest_permission(
         None if user is None else user.email, contest_id)
     if perm:
-        run_plagiarism_checker(contest_id)
-        return HttpResponse("Request Accepted!! Running in Background")
+        try:
+            response_report = run_plagiarism_checker(contest_id)
+            return HttpResponse(response_report)
+        except Exception as e:
+            print("error: ", e)
+            return HttpResponse(e)
     return handler404(request)
 
 

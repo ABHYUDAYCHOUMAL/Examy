@@ -1,0 +1,13 @@
+property,value,type
+kgramLength,23,number
+kgramsInWindow,17,number
+language,char,string
+maxFingerprintCount,null,object
+maxFingerprintPercentage,null,object
+minFragmentLength,0,number
+limitResults,null,object
+minSimilarity,0,number
+sortBy,total overlap,string
+fragmentSortBy,file order,string
+kgramData,false,boolean
+languageDetected,false,boolean

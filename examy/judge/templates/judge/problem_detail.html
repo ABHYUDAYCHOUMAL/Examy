@@ -45,16 +45,53 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/editor/editor.main.min.css">
 
     <script>
-    var e = document.getElementById("ddlViewBy");
-    var value = e.value;
-    var text = e.options[e.selectedIndex].text;
+        const editor_container = document.getElementById('container');
+
+
     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.26.1/min/vs' } });
     require(["vs/editor/editor.main"], () => {
-        monaco.editor.create(document.getElementById('container'), {
-            language: 'c',
+        window.editor = monaco.editor.create(editor_container, {
+            language: 'cpp',
             theme: 'vs-dark',
         });
     });
+
+    document.getElementById("language-dropdown").addEventListener('change', e => {
+        console.log("val: ", e.target.value);
+        editor_container.innerHTML = "";
+        window.editor = monaco.editor.create(editor_container, {
+            language: e.target.value,
+            theme: 'vs-dark',
+        });
+    });
+
+    function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+      
+        element.style.display = 'none';
+        document.body.appendChild(element);
+      
+        element.click();
+      
+        document.body.removeChild(element);
+      }
+
+    const lang_to_ext = {
+        python : 'py',
+        cpp : 'cpp',
+        c : 'c',
+        go: "go"
+    }
+
+    document.getElementById("download_editor_content").addEventListener('click', e => {
+        e.preventDefault();
+        const data = window.editor.getValue();
+        const ext = lang_to_ext[window.editor.getRawOptions().language]
+
+        download(`code.${ext}`, data);
+    })
 
     let quillModules = {
         toolbar: false
@@ -255,17 +292,23 @@
 </div>
 </div>
 
+
 {% if type == 'Participant' and user.is_authenticated %}
+
+<div class="col-12" id="container_root" style="min-height:400px;">
+    <h1>Code Editor</h1>
+    <label>Choose language: </label>
+    <select id="language-dropdown">
+        <option value="c++" selected="selected">C++</option>
+        <option value="c">C</option>
+        <option value="python">Python</option>
+        <option value="go">Go</option>
+    </select>
+    <div id="container" class="col-12" style="min-height:400px;"></div>
+    <button id="download_editor_content" class="btn btn-default" style="margin: 10px;">Download Code</button>
+</div>
+
 <div class="row">
-    <div class="col-12" id="container" style="min-height:400px;">
-        <h1>Code Editor</h1>
-        <select id="ddlViewBy">
-            <option value="c++" selected="selected">C++</option>
-            <option value="c">C</option>
-            <option value="python">Python</option>
-            <option value="go">Go</option>
-        </select>
-    </div>
     <div class="col-12 my-4">
         <div class="card">
             <div class="card-header">
