@@ -1,1 +1,1 @@
-# Mini-Project-Examy-
+# Examy
